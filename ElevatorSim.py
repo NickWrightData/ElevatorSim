@@ -9,6 +9,7 @@ class Passenger:
         self._request_time = None
         self._origin_floor = origin_floor
         self._destination_floor = destination_floor
+        self._direction = None
 
         # The following will set direction to True (Up) or False (Down) 
         # based on the provided floors.
