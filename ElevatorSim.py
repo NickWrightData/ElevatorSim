@@ -102,7 +102,7 @@ class Floor:
         return len(self._going_downs)
 
     def get_people_waiting_here(self):
-        return len(self._going_ups) + len(self._going_downs)
+        return self.get_going_up_count() + self.get_going_down_count()
 
 
 class Elevator:
