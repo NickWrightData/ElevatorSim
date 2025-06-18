@@ -160,10 +160,10 @@ class Elevator:
     def people_getting_in_here(self):
         if self.get_current_direction():
             # True = Up
-            return self.get_current_floor().get_going_up_count() > 0
+            return self._current_floor.get_going_up_count() > 0
         else:
             # False = Down
-            return self.get_current_floor().get_going_down_count() > 0
+            return self._current_floor.get_going_down_count() > 0
 
 
 def get_bottom_floor(any_floor):
