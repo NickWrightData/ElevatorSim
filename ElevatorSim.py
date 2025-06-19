@@ -1,6 +1,6 @@
 import time
 import os
-
+import math
 
 class Passenger:
     def __init__(self, origin_floor, destination_floor, start_wait_time):
@@ -199,7 +199,7 @@ def get_top_floor(any_floor):
 
 
 def get_all_up_down_counts(any_floor):
-    curr_floor = any_floor
+    curr_floor = get_bottom_floor(any_floor)
     going_up = 0
     going_down = 0
 
@@ -319,7 +319,7 @@ if __name__ == '__main__':
     floor_count = 10
 
     # Please set the time step in seconds:
-    time_step = .1
+    time_step = 0.1
 
     # Please set the start time:
     elapsed_time = 0
@@ -372,8 +372,21 @@ if __name__ == '__main__':
     # Beginning the simulation...
     # NOTE: This is the "brains" of the elevator.
     # To try out different solutions, change the code below!
-    while (
-            len(full_passenger_list) > 0 or elevator.get_passenger_count() > 0 or up_counts + down_counts > 0):
+    while len(full_passenger_list) > 0 or elevator.get_passenger_count() > 0 or up_counts + down_counts > 0:
+
+        # WARNING: PLEASE ENSURE ALL SOLUTIONS BELOW EXCEPT ONE IS COMMENTED OUT!
+        # NOTE: There are four (4) solutions below.
+        # INFO: To COMMENT OUT an entire Solution, simply remove the hash ('#') from in front of the solution.
+        #		e.g. change "#''''SOLUTION #1: (...)"
+        #			  ...to "''''SOLUTION #1: (...)"
+        #		To UN-COMMENT OUT an entire Solution, simply add the forward slash back in:
+        #		e.g. change "''''SOLUTION #1: (...)"
+        #             ...to "#''''SOLUTION #1: (...)"
+
+        # SOLUTION #1
+        ''''SOLUTION #1: "Smart" solution (deciding to stop when no passengers are asking for transport;
+        #				going up all the way until no more users above want to get picked up, repeat for down;
+        #				checking if there are only users behind us; etc.)
         # Step 0: Initialize counts
         (up_counts, down_counts) = get_all_up_down_counts(
             elevator.get_current_floor())
@@ -455,6 +468,226 @@ if __name__ == '__main__':
         elapsed_time = display_all_floors_and_data(bottom_floor, elevator,
                                                    elapsed_time, time_step,
                                                    True)
+        # '''
+
+        # SOLUTION #2
+        ''''SOLUTION #2: Ignore where possible passengers are;
+        #                 just cocktail-shake the elevator back and forth until we're done.
+
+        # Step 0: Initialize counts
+        (up_counts, down_counts) = get_all_up_down_counts(
+           elevator.get_current_floor())
+
+        # Step 1: If there are people getting out, let them out!
+        while elevator.people_getting_out_here():
+            elevator.let_people_out()
+
+            # Show all the floors, the elevator, and all their passenger data
+            elapsed_time = display_all_floors_and_data(bottom_floor, elevator,
+                                                      elapsed_time, time_step,
+                                                      True)
+
+        # Step 2: If there are people getting in, let them in!
+        while elevator.people_getting_in_here():
+            elevator.let_people_in()
+            elapsed_time = display_all_floors_and_data(bottom_floor, elevator,
+                                                      elapsed_time, time_step,
+                                                      True)
+
+        # Step 3: Check to see if any new people are waiting on any floor
+        new_people = False
+        while len(full_passenger_list) > 0 and full_passenger_list[0].get_start_time() <= elapsed_time:
+            curr_passenger = full_passenger_list[0]
+            curr_passenger.get_starting_floor().add_new_passenger(
+                curr_passenger)
+            curr_passenger.request_transport()
+            full_passenger_list = full_passenger_list[1:]
+            (up_counts, down_counts) = get_all_up_down_counts(
+                elevator.get_current_floor())
+            new_people = True
+        if new_people:
+            elapsed_time = display_all_floors_and_data(bottom_floor, elevator,
+                                                       elapsed_time, time_step,
+                                                       True)
+
+        # Step 4: Keep moving the elevator, regardless of anything else.
+        if elevator.get_current_direction():
+            # True = Up
+            elevator.go_up()
+        else:
+            # False = Down
+            elevator.go_down()
+
+        # Step 5: re-draw the scene and pause for a second
+        elapsed_time = display_all_floors_and_data(bottom_floor, elevator,
+                                                  elapsed_time, time_step,
+                                                  True)
+        # '''
+
+        # SOLUTION #3
+        ''''SOLUTION #3: The same as Solution 1, except we additionally move to the middle floor when no users are asking for transport
+        # Step 0: Initialize counts
+        (up_counts, down_counts) = get_all_up_down_counts(
+            elevator.get_current_floor())
+
+        # Step 1: If there are people getting out, let them out!
+        while elevator.people_getting_out_here():
+            elevator.let_people_out()
+
+            # Show all the floors, the elevator, and all their passenger data
+            elapsed_time = display_all_floors_and_data(bottom_floor, elevator,
+                                                       elapsed_time, time_step,
+                                                       True)
+
+        # Step 2: If there are people getting in, let them in!
+        while elevator.people_getting_in_here():
+            elevator.let_people_in()
+            elapsed_time = display_all_floors_and_data(bottom_floor, elevator,
+                                                       elapsed_time, time_step,
+                                                       True)
+
+        # Step 3: Check to see if any new people are waiting on any floor
+        new_people = False
+        while len(full_passenger_list) > 0 and full_passenger_list[0].get_start_time() <= elapsed_time:
+            curr_passenger = full_passenger_list[0]
+            curr_passenger.get_starting_floor().add_new_passenger(
+                curr_passenger)
+            curr_passenger.request_transport()
+            full_passenger_list = full_passenger_list[1:]
+            (up_counts, down_counts) = get_all_up_down_counts(
+                elevator.get_current_floor())
+            new_people = True
+        if new_people:
+            elapsed_time = display_all_floors_and_data(bottom_floor, elevator,
+                                                       elapsed_time, time_step,
+                                                       True)
+
+        # Step 4: If people are in the elevator, keep going.
+        #        Else, if we're going up and there are people above waiting,
+        #            OR going down and people below waiting:
+        #               keep going
+        #        ELSE, if people are waiting above or below, they must be "behind" us;
+        #               turn around!!
+        #        IF "ALL ELSE'S" FAIL:
+        #               do nothing; no one in elevator and no one waiting for it. Just wait.
+        if elevator.get_passenger_count() > 0:
+            if elevator.get_current_direction():
+                # True = Up
+                elevator.go_up()
+            else:
+                # False = Down
+                elevator.go_down()
+            (up_counts, down_counts) = get_all_up_down_counts(
+                elevator.get_current_floor())
+
+        elif elevator.get_current_direction() and people_waiting_above(
+                elevator.get_current_floor()) > 0:
+            # Keep going--there's more people to pick up above!
+            elevator.go_up()
+            (up_counts, down_counts) = get_all_up_down_counts(
+                elevator.get_current_floor())
+
+        elif elevator.get_current_direction() == False and people_waiting_below(
+                elevator.get_current_floor()) > 0:
+            # Keep going--there's more people to pick up below!
+            elevator.go_down()
+            (up_counts, down_counts) = get_all_up_down_counts(
+                elevator.get_current_floor())
+
+        elif up_counts > 0 or down_counts > 0:
+            # There are only people waiting in the *opposite* direction!
+            elevator.set_direction(not elevator.get_current_direction())
+
+        else:
+            # No passengers left, and no one is waiting on any floor.
+            # Move to the (lower) middle floor.
+            #	e.g. 10 floors? move to 5, not 6. (floor 5 would be the exact and only middle floor with 9 floors total)
+            goal_floor = math.floor(floor_count/2)
+            if elevator.get_current_floor().get_floor_number() < goal_floor:
+                elevator.go_up()
+            elif elevator.get_current_floor().get_floor_number() > goal_floor:
+                elevator.go_down()
+            else:
+                # We're were we need to be. Do nothing.
+                pass
+
+        # Step 5: re-draw the scene and pause for a second
+        elapsed_time = display_all_floors_and_data(bottom_floor, elevator,
+                                                   elapsed_time, time_step,
+                                                   True)
+        # '''
+
+        # SOLUTION #4
+        #''''SOLUTION #4: Same as Solution #2, except we move to the middle and stop if there are no users left to pick up at the moment
+
+        # Step 0: Initialize counts
+        (up_counts, down_counts) = get_all_up_down_counts(
+           elevator.get_current_floor())
+
+        # Step 1: If there are people getting out, let them out!
+        while elevator.people_getting_out_here():
+            elevator.let_people_out()
+
+            # Show all the floors, the elevator, and all their passenger data
+            elapsed_time = display_all_floors_and_data(bottom_floor, elevator,
+                                                      elapsed_time, time_step,
+                                                      True)
+
+        # Step 2: If there are people getting in, let them in!
+        while elevator.people_getting_in_here():
+            elevator.let_people_in()
+            elapsed_time = display_all_floors_and_data(bottom_floor, elevator,
+                                                      elapsed_time, time_step,
+                                                      True)
+
+        # Step 3: Check to see if any new people are waiting on any floor
+        new_people = False
+        while len(full_passenger_list) > 0 and full_passenger_list[0].get_start_time() <= elapsed_time:
+            curr_passenger = full_passenger_list[0]
+            curr_passenger.get_starting_floor().add_new_passenger(
+                curr_passenger)
+            curr_passenger.request_transport()
+            full_passenger_list = full_passenger_list[1:]
+            (up_counts, down_counts) = get_all_up_down_counts(
+                elevator.get_current_floor())
+            new_people = True
+        if new_people:
+            elapsed_time = display_all_floors_and_data(bottom_floor, elevator,
+                                                       elapsed_time, time_step,
+                                                       True)
+
+        # Step 4:  If there are people waiting above or below, or people in the elevator, just keep moving!
+        #			Else, move to the middle and stop.
+        (up_counts, down_counts) = get_all_up_down_counts(
+            elevator.get_current_floor())
+        if (up_counts > 0 or down_counts > 0 or elevator.get_passenger_count() > 0
+                or elevator.get_current_floor().get_people_waiting_here() > 0):
+            # Keep moving!
+            if elevator.get_current_direction():
+                elevator.go_up()
+            else:
+                elevator.go_down()
+        elif up_counts == 0 and down_counts == 0 and elevator.get_passenger_count() == 0:
+            # No passengers left, and no one is waiting on any floor.
+            # Move to the (lower) middle floor.
+            #	e.g. 10 floors? move to 5, not 6. (floor 5 would be the exact and only middle floor with 9 floors total)
+            goal_floor = math.floor(floor_count / 2)
+            print(goal_floor)
+            if elevator.get_current_floor().get_floor_number() < goal_floor:
+                elevator.go_up()
+                elevator.set_direction(True)
+            elif elevator.get_current_floor().get_floor_number() > goal_floor:
+                elevator.go_down()
+                elevator.set_direction(False)
+            else:
+                # We're were we need to be. Do nothing.
+                pass
+
+        # Step 5: re-draw the scene and pause for a second
+        elapsed_time = display_all_floors_and_data(bottom_floor, elevator,
+                                                  elapsed_time, time_step,
+                                                  True)
+        # '''
 
     total_passenger_wait_time = 0
     longest_wait_time = 0
