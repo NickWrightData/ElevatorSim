@@ -137,11 +137,11 @@ public class ElevatorSim {
 				;
 			}
 			
-			//Step 6: re-draw the scene and pause for a second
+			//Step 5: re-draw the scene and pause for a second
 			elapsedTime = displayAllFloorsAndData(bottomFloor, elevator, elapsedTime, timeStep, true);
 			//*/
 			
-			//*SOLUTION #2: Ignore where possible passengers are;
+			/*SOLUTION #2: Ignore where possible passengers are;
 			//					just cocktail-shake the elevator back and forth until we're done.
 			//Step 0: Initialize counts
 			counts = getAllUpDownCounts(elevator.getCurrentFloor());
@@ -259,67 +259,27 @@ public class ElevatorSim {
 					;
 				}
 					
-				counts = getAllUpDownCounts(elevator.getCurrentFloor());
+				//counts = getAllUpDownCounts(elevator.getCurrentFloor());
 			}
 			
 			//Step 6: re-draw the scene and pause for a second
 			elapsedTime = displayAllFloorsAndData(bottomFloor, elevator, elapsedTime, timeStep, true);
 			//*/
 			
-			/*SOLUTION #4: Same as Solution #2, except we move to the middle and stop if there are no users left to pick up at the moment
+			//*SOLUTION #4: Same as Solution #2, except we move to the middle and stop if there are no users left to pick up at the moment
 			//Step 0: Initialize counts
-			System.out.println("-----");
 			counts = getAllUpDownCounts(elevator.getCurrentFloor());
 			
 			//Step 1: If there are people getting out, let them out!
 			while (elevator.peopleGettingOutHere()) {
-				System.out.println("PEOPLE OUT");
 				elevator.letPeopleOut();
 				elapsedTime = displayAllFloorsAndData(bottomFloor, elevator, elapsedTime, timeStep, true);
 			}
 			
 			//Step 2: If there are people getting in, let them in!
 			while (elevator.peopleGettingInHere()) {
-				System.out.println("PEOPLE IN");
 				elevator.letPeopleIn();
-				System.out.println("YEAH!");
 				elapsedTime = displayAllFloorsAndData(bottomFloor, elevator, elapsedTime, timeStep, true);
-			}
-			
-			//Step 3: If there are people waiting above or below, or people in the elevator, just keep moving!
-			//			Else, move to the middle and stop.
-			counts = getAllUpDownCounts(elevator.getCurrentFloor());
-			System.out.println(counts[0]+" "+counts[1]);
-			System.out.println("PEOPLE WAITING HERE: "+elevator.getCurrentFloor().getPeopleWaitingHere());
-			if (counts[0] > 0 || counts[1] > 0 || elevator.getPassengerCount() > 0 || elevator.getCurrentFloor().getPeopleWaitingHere() > 0) {
-				System.out.println("KEEP MOVING");
-				//Keep moving!
-				if (elevator.getCurrentDirection()) {
-				//true = Up
-					elevator.goUp();
-				} else {
-					elevator.goDown();
-				}
-			} else if (counts[0] == 0 && counts[1] == 0 && elevator.getPassengerCount() == 0){
-				System.out.println("GO TO MIDDLE");
-				//No passengers left, and no one is waiting on any floor.
-				//Move to the (lower) middle floor.
-				//	e.g. 10 floors? move to 5, not 6. (floor 5 would be the exact and only middle floor with 9 floors total)
-				int goalFloor = (int)Math.ceil(((double)floorCount)/2);
-				if (elevator.getCurrentFloor().getFloorNumber() < goalFloor) {
-					elevator.goUp();
-					elevator.setDirection(true);
-				} else if (elevator.getCurrentFloor().getFloorNumber() > goalFloor) {
-					elevator.goDown();
-					elevator.setDirection(false);
-				} else {
-					//We're where we need to be. Do nothing.
-					;
-				}
-				
-				counts = getAllUpDownCounts(elevator.getCurrentFloor());
-			} else {
-				System.out.println("????");
 			}
 			
 			//Step 3: Check to see if any new people are waiting on any floor
@@ -337,7 +297,38 @@ public class ElevatorSim {
 				elapsedTime = displayAllFloorsAndData(bottomFloor, elevator, elapsedTime, timeStep, true);
 			}
 			
-			//Step 4: re-draw the scene and pause for a second			
+			//Step 4 If there are people waiting above or below, or people in the elevator, just keep moving!
+			//			Else, move to the middle and stop.
+			counts = getAllUpDownCounts(elevator.getCurrentFloor());
+			if (counts[0] > 0 || counts[1] > 0 || elevator.getPassengerCount() > 0 || elevator.getCurrentFloor().getPeopleWaitingHere() > 0) {
+				//Keep moving!
+				if (elevator.getCurrentDirection()) {
+					//true = Up
+					elevator.goUp();
+				} else {
+					//false = Down
+					elevator.goDown();
+				}
+			} else if (counts[0] == 0 && counts[1] == 0 && elevator.getPassengerCount() == 0){
+				//No passengers left, and no one is waiting on any floor.
+				//Move to the (lower) middle floor.
+				//	e.g. 10 floors? move to 5, not 6. (floor 5 would be the exact and only middle floor with 9 floors total)
+				int goalFloor = (int)Math.ceil(((double)floorCount)/2);
+				System.out.println(goalFloor);
+				if (elevator.getCurrentFloor().getFloorNumber() < goalFloor) {
+					elevator.goUp();
+					elevator.setDirection(true);
+				} else if (elevator.getCurrentFloor().getFloorNumber() > goalFloor) {
+					elevator.goDown();
+					elevator.setDirection(false);
+				} else {
+					//We're where we need to be. Do nothing.
+					;
+				}
+				
+			}
+			
+			//Step 5: re-draw the scene and pause for a second
 			elapsedTime = displayAllFloorsAndData(bottomFloor, elevator, elapsedTime, timeStep, true);
 			//*/
 		
