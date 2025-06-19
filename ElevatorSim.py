@@ -365,14 +365,13 @@ if __name__ == '__main__':
         full_passenger_list.append(Passenger(start_floor, dest_floor, start_time))
 
     timing_passenger_list = full_passenger_list
-    # Show all the floors, the elevator, and all their passenger data
-    # display_all_floors_and_data(bottom_floor, elevator, elapsed_time)
+
+    (up_counts, down_counts) = get_all_up_down_counts(
+        elevator.get_current_floor())
 
     # Beginning the simulation...
     # NOTE: This is the "brains" of the elevator.
     # To try out different solutions, change the code below!
-    (up_counts, down_counts) = get_all_up_down_counts(
-        elevator.get_current_floor())
     while (
             len(full_passenger_list) > 0 or elevator.get_passenger_count() > 0 or up_counts + down_counts > 0):
         # Step 0: Initialize counts
@@ -382,6 +381,8 @@ if __name__ == '__main__':
         # Step 1: If there are people getting out, let them out!
         while elevator.people_getting_out_here():
             elevator.let_people_out()
+
+            # Show all the floors, the elevator, and all their passenger data
             elapsed_time = display_all_floors_and_data(bottom_floor, elevator,
                                                        elapsed_time, time_step,
                                                        True)
