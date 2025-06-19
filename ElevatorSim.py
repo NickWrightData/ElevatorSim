@@ -3,19 +3,23 @@ import os
 
 
 class Passenger:
-    def __init__(self, origin_floor, destination_floor):
+    def __init__(self, origin_floor, destination_floor, start_wait_time):
         self._arrival_time = None
         self._boarding_time = None
         self._request_time = None
         self._origin_floor = origin_floor
         self._destination_floor = destination_floor
         self._direction = None
+        self._start_time = start_wait_time
 
         # The following will set direction to True (Up) or False (Down) 
         # based on the provided floors.
         origin_floor_number = origin_floor.get_floor_number()
         destination_floor_number = destination_floor.get_floor_number()
         self._direction = (origin_floor_number < destination_floor_number)
+
+    def get_start_time(self):
+        return self._start_time
 
     def get_direction(self):
         return self._direction
@@ -190,7 +194,7 @@ def get_all_up_down_counts(any_floor):
     going_up += curr_floor.get_going_up_count()
     going_down += curr_floor.get_going_down_count()
 
-    # Starting at the bottom, go up and count the number of ups and downs
+    # Starting at the bottom, go up and count the number of people who want to go up and who want to go down
     while curr_floor.get_floor_above() is not None:
         curr_floor = curr_floor.get_floor_above()
         going_up += curr_floor.get_going_up_count()
@@ -228,11 +232,12 @@ def display_all_floors_and_data(any_floor, elevator_display, elapsed,
 
     print("Elapsed Time:", elapsed)
     print("Floor     Up Dn Arr")
+    print("--------------------")
 
     curr_floor = get_top_floor(any_floor)
     elevator_floor = elevator_display.get_current_floor().get_floor_number()
 
-    while True:
+    while curr_floor is not None:
         if curr_floor.get_floor_number() == elevator_floor:
             curr_passengers = elevator_display.get_passengers()
             elevator_addon = "[" + str(elevator_display.get_passenger_count()) + ": "
@@ -243,7 +248,7 @@ def display_all_floors_and_data(any_floor, elevator_display, elapsed,
         else:
             elevator_addon = "                "
         if curr_floor.get_floor_number() < 10:
-            print("Floor", "0" + str(curr_floor.get_floor_number()) + ":",
+            print("Floor  " + str(curr_floor.get_floor_number()) + ":",
                   curr_floor.get_going_up_count(),
                   " " + str(curr_floor.get_going_down_count()),
                   " " + str(curr_floor.get_arrived_count()),
@@ -254,10 +259,7 @@ def display_all_floors_and_data(any_floor, elevator_display, elapsed,
                   " " + str(curr_floor.get_going_down_count()),
                   " " + str(curr_floor.get_arrived_count()),
                   " | " + elevator_addon)
-        if curr_floor.get_floor_below() is not None:
-            curr_floor = curr_floor.get_floor_below()
-        else:
-            break
+        curr_floor = curr_floor.get_floor_below()
 
     if increase:
         time.sleep(step)
@@ -292,7 +294,9 @@ def create_floors(total_floors):
 
 def find_floor(any_floor, floor_number):
     curr_floor = get_bottom_floor(any_floor)
-    while curr_floor.get_floor_number() != floor_number and curr_floor.get_floor_above() is not None:
+    while (curr_floor is not None
+           and curr_floor.get_floor_number() != floor_number
+           and curr_floor.get_floor_above() is not None):
         curr_floor = curr_floor.get_floor_above()
 
     return curr_floor
@@ -336,7 +340,7 @@ if __name__ == '__main__':
     # Now creating the floors as a doubly-linked list and returning the bottom floor...
     bottom_floor = create_floors(floor_count)
 
-    # Now create the elevator and setting it at the bottom floor...
+    # Now creating the elevator and setting it at the bottom floor...
     elevator = Elevator(bottom_floor)
 
     # Now creating the passenger list...
@@ -346,8 +350,7 @@ if __name__ == '__main__':
     for (start_time, start_floor, dest_floor) in passenger_list:
         start_floor = find_floor(bottom_floor, start_floor)
         dest_floor = find_floor(bottom_floor, dest_floor)
-        full_passenger_list.append(
-            (start_time, Passenger(start_floor, dest_floor)))
+        full_passenger_list.append(Passenger(start_floor, dest_floor, start_time))
 
     timing_passenger_list = full_passenger_list
     # Show all the floors, the elevator, and all their passenger data
@@ -364,14 +367,14 @@ if __name__ == '__main__':
         (up_counts, down_counts) = get_all_up_down_counts(
             elevator.get_current_floor())
 
-        # Step 1: If there are people getting out, let them out
+        # Step 1: If there are people getting out, let them out!
         while elevator.people_getting_out_here():
             elevator.let_people_out()
             elapsed_time = display_all_floors_and_data(bottom_floor, elevator,
                                                        elapsed_time, time_step,
                                                        True)
 
-        # Step 2: If there are people getting in, let them in
+        # Step 2: If there are people getting in, let them in!
         while elevator.people_getting_in_here():
             elevator.let_people_in()
             elapsed_time = display_all_floors_and_data(bottom_floor, elevator,
@@ -380,9 +383,8 @@ if __name__ == '__main__':
 
         # Step 3: Check to see if any new people are waiting on any floor
         new_people = False
-        while len(full_passenger_list) > 0 and full_passenger_list[0][
-            0] <= elapsed_time:
-            curr_passenger = full_passenger_list[0][1]
+        while len(full_passenger_list) > 0 and full_passenger_list[0].get_start_time() <= elapsed_time:
+            curr_passenger = full_passenger_list[0]
             curr_passenger.get_starting_floor().add_new_passenger(
                 curr_passenger)
             curr_passenger.request_transport()
@@ -407,15 +409,13 @@ if __name__ == '__main__':
             if elevator.get_current_direction():
                 # True = Up
                 elevator.go_up()
-                (up_counts, down_counts) = get_all_up_down_counts(
-                    elevator.get_current_floor())
             else:
                 # False = Down
                 elevator.go_down()
-                (up_counts, down_counts) = get_all_up_down_counts(
-                    elevator.get_current_floor())
+            (up_counts, down_counts) = get_all_up_down_counts(
+                elevator.get_current_floor())
 
-        elif elevator.get_current_direction() == True and people_waiting_above(
+        elif elevator.get_current_direction() and people_waiting_above(
                 elevator.get_current_floor()) > 0:
             # Keep going--there's more people to pick up above!
             elevator.go_up()
@@ -434,8 +434,8 @@ if __name__ == '__main__':
             elevator.set_direction(not elevator.get_current_direction())
 
         else:
-            # Do nothing; no passengers left, and no one is waiting on any floor
-            # Move to center floor to minimize potential movement?
+            # Do nothing; no passengers left, and no one is waiting on any floor.
+            # (or, move to center floor to minimize potential movement?)
             pass
 
         # Step 6: re-draw the scene and pause for a second
@@ -447,10 +447,10 @@ if __name__ == '__main__':
     longest_wait_time = 0
 
     for passenger in timing_passenger_list:
-        curr_pass_wait_time = passenger[1].get_final_wait_time()
+        curr_pass_wait_time = passenger.get_final_wait_time()
         total_passenger_wait_time += curr_pass_wait_time
         if longest_wait_time < curr_pass_wait_time:
             longest_wait_time = curr_pass_wait_time
 
     print("FINAL COMBINED PASSENGER WAIT TIME: ", total_passenger_wait_time)
-    print("LONGEST WAIT TIME:", longest_wait_time)
+    print("LONGEST WAIT TIME: ", longest_wait_time)
