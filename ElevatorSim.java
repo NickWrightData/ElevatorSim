@@ -70,9 +70,9 @@ public class ElevatorSim {
 			//		e.g. change "/*SOLUTION #1: (...)"
 			//            ...to "//*SOLUTION #1: (...)"
 			
-			//*SOLUTION #1: "Smart" solution (deciding to stop when no passengers are asking for transport;
+			/*SOLUTION #1: "Smart" solution (deciding to stop when no passengers are asking for transport;
 			//				going up all the way until no more users above want to get picked up, repeat for down;
-			//				checking if there are only users behind us; etc.
+			//				checking if there are only users behind us; etc.)
 			//Step 0: Initialize counts
 			counts = getAllUpDownCounts(elevator.getCurrentFloor());
 			
@@ -141,7 +141,8 @@ public class ElevatorSim {
 			elapsedTime = displayAllFloorsAndData(bottomFloor, elevator, elapsedTime, timeStep, true);
 			//*/
 			
-			/*SOLUTION #2: Ignore where possible passengers are, just cocktail shake the elevator back and forth until we're done
+			//*SOLUTION #2: Ignore where possible passengers are;
+			//					just cocktail-shake the elevator back and forth until we're done.
 			//Step 0: Initialize counts
 			counts = getAllUpDownCounts(elevator.getCurrentFloor());
 			
@@ -155,14 +156,6 @@ public class ElevatorSim {
 			while (elevator.peopleGettingInHere()) {
 				elevator.letPeopleIn();
 				elapsedTime = displayAllFloorsAndData(bottomFloor, elevator, elapsedTime, timeStep, true);
-			}
-			
-			if (elevator.getCurrentDirection()) {
-				//true = Up
-				elevator.goUp();
-			} else {
-				//false = Down
-				elevator.goDown();
 			}
 			
 			//Step 3: Check to see if any new people are waiting on any floor
@@ -180,7 +173,16 @@ public class ElevatorSim {
 				elapsedTime = displayAllFloorsAndData(bottomFloor, elevator, elapsedTime, timeStep, true);
 			}
 			
-			//Step 4: re-draw the scene and pause for a second
+			//Step 4: Keep moving the elevator, regardless of anything else.
+			if (elevator.getCurrentDirection()) {
+				//true = Up
+				elevator.goUp();
+			} else {
+				//false = Down
+				elevator.goDown();
+			}
+			
+			//Step 5: re-draw the scene and pause for a second
 			elapsedTime = displayAllFloorsAndData(bottomFloor, elevator, elapsedTime, timeStep, true);
 			//*/
 			
