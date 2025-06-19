@@ -114,6 +114,14 @@ class Elevator:
         self._current_floor = current_floor
         self._passengers = []
         self._direction = True  # True == Up, False == Down
+        self._floors_moved = 0
+        self._people_moved = 0
+
+    def get_total_floors_moved(self) -> int:
+        return self._floors_moved
+
+    def get_total_people_moved(self) -> int:
+        return self._people_moved
 
     def set_direction(self, direction):
         self._direction = direction
@@ -129,6 +137,7 @@ class Elevator:
             self._current_floor = self._current_floor.get_floor_above()
         else:
             self._direction = False
+        self._floors_moved += 1
 
     def go_down(self):
         if self._current_floor.get_floor_below() is not None:
@@ -136,6 +145,7 @@ class Elevator:
             # self.arrive_at_new_floor()
         else:
             self._direction = True
+        self._floors_moved += 1
 
     def get_passengers(self):
         return self._passengers
@@ -149,11 +159,13 @@ class Elevator:
                 self._current_floor.receive_passenger(out_passenger)
                 self._passengers.remove(out_passenger)
                 out_passenger.arrived()
+                self._people_moved += 1
 
     def let_people_in(self):
         for in_passenger in self._current_floor.board_elevator(self._direction):
             self._passengers.append(in_passenger)
             in_passenger.boarded()
+            self._people_moved += 1
 
     def people_getting_out_here(self):
         for poss_pass in self._passengers:
@@ -452,5 +464,7 @@ if __name__ == '__main__':
         if longest_wait_time < curr_pass_wait_time:
             longest_wait_time = curr_pass_wait_time
 
-    print("FINAL COMBINED PASSENGER WAIT TIME: ", total_passenger_wait_time)
-    print("LONGEST WAIT TIME: ", longest_wait_time)
+    print("FINAL COMBINED PASSENGERS' WAIT TIME: ", total_passenger_wait_time)
+    print("LONGEST WAIT TIME FOR ANY ONE PASSENGER: ", longest_wait_time)
+    print("TOTAL FLOORS MOVED: ", elevator.get_total_floors_moved())
+    print("TOTAL PEOPLE MOVED: ", elevator.get_total_people_moved())
