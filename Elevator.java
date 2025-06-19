@@ -41,21 +41,21 @@ public class Elevator {
 	public void goUp() {
 		if (this.currentFloor.getFloorAbove() != null) {
 			this.currentFloor = this.currentFloor.getFloorAbove();
+			this.floorsMoved++;
 		} else {
 			//We are at the top and need to switch directions
 			this.direction = false; //true = Up, false = Down
 		}
-		this.floorsMoved++;
 	}
 	
 	public void goDown() {
 		if (this.currentFloor.getFloorBelow() != null) {
 			this.currentFloor = this.currentFloor.getFloorBelow();
+			this.floorsMoved++;
 		} else {
 			//We are at the top and need to switch directions
 			this.direction = true; //true = Up, false = Down
 		}
-		this.floorsMoved++;
 	}
 	
 	public ArrayList<Passenger> getPassengers() {
@@ -84,7 +84,7 @@ public class Elevator {
 			Passenger inPass = boardingThisWay.get(i);
 			this.passengers.add(inPass);
 			inPass.boarded();
-			this.peopleMoved++;
+			//this.peopleMoved++;
 		}
 	}
 	
