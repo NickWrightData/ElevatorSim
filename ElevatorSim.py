@@ -135,17 +135,16 @@ class Elevator:
     def go_up(self):
         if self._current_floor.get_floor_above() is not None:
             self._current_floor = self._current_floor.get_floor_above()
+            self._floors_moved += 1
         else:
             self._direction = False
-        self._floors_moved += 1
 
     def go_down(self):
         if self._current_floor.get_floor_below() is not None:
             self._current_floor = self._current_floor.get_floor_below()
-            # self.arrive_at_new_floor()
+            self._floors_moved += 1
         else:
             self._direction = True
-        self._floors_moved += 1
 
     def get_passengers(self):
         return self._passengers
@@ -165,7 +164,7 @@ class Elevator:
         for in_passenger in self._current_floor.board_elevator(self._direction):
             self._passengers.append(in_passenger)
             in_passenger.boarded()
-            self._people_moved += 1
+            # self._people_moved += 1
 
     def people_getting_out_here(self):
         for poss_pass in self._passengers:
@@ -319,7 +318,7 @@ if __name__ == '__main__':
     floor_count = 10
 
     # Please set the time step in seconds:
-    time_step = 0.1
+    time_step = 0.5
 
     # Please set the start time:
     elapsed_time = 0
@@ -384,7 +383,7 @@ if __name__ == '__main__':
         #             ...to "#''''SOLUTION #1: (...)"
 
         # SOLUTION #1
-        ''''SOLUTION #1: "Smart" solution (deciding to stop when no passengers are asking for transport;
+        #''''SOLUTION #1: "Smart" solution (deciding to stop when no passengers are asking for transport;
         #				going up all the way until no more users above want to get picked up, repeat for down;
         #				checking if there are only users behind us; etc.)
         # Step 0: Initialize counts
@@ -618,7 +617,7 @@ if __name__ == '__main__':
         # '''
 
         # SOLUTION #4
-        #''''SOLUTION #4: Same as Solution #2, except we move to the middle and stop if there are no users left to pick up at the moment
+        ''''SOLUTION #4: Same as Solution #2, except we move to the middle and stop if there are no users left to pick up at the moment
 
         # Step 0: Initialize counts
         (up_counts, down_counts) = get_all_up_down_counts(
@@ -672,7 +671,6 @@ if __name__ == '__main__':
             # Move to the (lower) middle floor.
             #	e.g. 10 floors? move to 5, not 6. (floor 5 would be the exact and only middle floor with 9 floors total)
             goal_floor = math.floor(floor_count / 2)
-            print(goal_floor)
             if elevator.get_current_floor().get_floor_number() < goal_floor:
                 elevator.go_up()
                 elevator.set_direction(True)

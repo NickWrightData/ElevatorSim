@@ -6,7 +6,7 @@ public class ElevatorSim {
 		int floorCount = 10;
 		
 		//Please set the time step in seconds:
-		double timeStep = 0.1;
+		double timeStep = .5;
 		
 		//Please set the start time:
 		int elapsedTime = 0;
@@ -70,7 +70,7 @@ public class ElevatorSim {
 			//		e.g. change "/*SOLUTION #1: (...)"
 			//            ...to "//*SOLUTION #1: (...)"
 			
-			/*SOLUTION #1: "Smart" solution (deciding to stop when no passengers are asking for transport;
+			//*SOLUTION #1: "Smart" solution (deciding to stop when no passengers are asking for transport;
 			//				going up all the way until no more users above want to get picked up, repeat for down;
 			//				checking if there are only users behind us; etc.)
 			//Step 0: Initialize counts
@@ -266,7 +266,7 @@ public class ElevatorSim {
 			elapsedTime = displayAllFloorsAndData(bottomFloor, elevator, elapsedTime, timeStep, true);
 			//*/
 			
-			//*SOLUTION #4: Same as Solution #2, except we move to the middle and stop if there are no users left to pick up at the moment
+			/*SOLUTION #4: Same as Solution #2, except we move to the middle and stop if there are no users left to pick up at the moment
 			//Step 0: Initialize counts
 			counts = getAllUpDownCounts(elevator.getCurrentFloor());
 			
@@ -314,7 +314,6 @@ public class ElevatorSim {
 				//Move to the (lower) middle floor.
 				//	e.g. 10 floors? move to 5, not 6. (floor 5 would be the exact and only middle floor with 9 floors total)
 				int goalFloor = (int)Math.ceil(((double)floorCount)/2);
-				System.out.println(goalFloor);
 				if (elevator.getCurrentFloor().getFloorNumber() < goalFloor) {
 					elevator.goUp();
 					elevator.setDirection(true);
